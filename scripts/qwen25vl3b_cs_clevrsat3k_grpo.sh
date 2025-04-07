@@ -1,6 +1,7 @@
 set -x
 
-MODEL_PATH=/home/hunar/LLaMA-Factory/output/qwen25_vl_lora_sft
+MODEL_PATH=Qwen/Qwen2.5-VL-3B-Instruct
+# MODEL_PATH=/home/hunar/LLaMA-Factory/output/qwen25_vl_lora_sft
 # MODEL_PATH=/gpfs/scratch/ehpc80/PIXL-R1-Project/LLaMA-Factory/output/qwen25_vl_lora_sft/
 
 FORMAT_PROMPT="""You FIRST think about the reasoning process as an internal monologue and then provide the final answer.

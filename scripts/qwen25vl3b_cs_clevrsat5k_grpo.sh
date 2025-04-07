@@ -15,4 +15,4 @@ python3 -m verl.trainer.main \
     worker.actor.model.model_path=${MODEL_PATH} \
     worker.rollout.tensor_parallel_size=1 \
     trainer.experiment_name=qwen25vl3b_cs_clevr_sat_5k \
-    trainer.n_gpus_per_node=2
+    trainer.n_gpus_per_node=4

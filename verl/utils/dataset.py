@@ -111,9 +111,9 @@ class RLHFDataset(Dataset, ImageProcessMixin):
             data_split = "train"
 
         if os.path.isdir(data_path):
-            self.dataset = load_dataset("parquet", data_dir=data_path, split="train")
+            self.dataset = load_dataset("parquet", data_dir=data_path, split=data_split)
         elif os.path.isfile(data_path):
-            self.dataset = load_dataset("parquet", data_files=data_path, split="train")
+            self.dataset = load_dataset("parquet", data_files=data_path, split=data_split)
         else:  # remote dataset
             self.dataset = load_dataset(data_path, split=data_split)
 
@@ -138,7 +138,11 @@ class RLHFDataset(Dataset, ImageProcessMixin):
 
             messages = [{"role": "user", "content": content_list}]
             prompt = self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
-            images = [self.process_image(image) for image in row_dict.pop(self.image_key)]
+            
+            image_or_images = row_dict.pop(self.image_key)
+            if not isinstance(image_or_images, list):
+                image_or_images = [image_or_images]  # wrap single image
+            images = [self.process_image(image) for image in image_or_images]
             model_inputs = self.processor(images, [prompt], add_special_tokens=False, return_tensors="pt")
             input_ids = model_inputs.pop("input_ids")[0]
             attention_mask = model_inputs.pop("attention_mask")[0]

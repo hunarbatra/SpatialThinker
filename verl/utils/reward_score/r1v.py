@@ -26,10 +26,15 @@ def r1v_format_reward(predict_str: str) -> float:
 
 def r1v_accuracy_reward(predict_str: str, ground_truth: str) -> float:
     try:
-        ground_truth = ground_truth.strip()
-        content_match = re.search(r"<answer>(.*?)</answer>", predict_str)
-        given_answer = content_match.group(1).strip() if content_match else predict_str.strip()
-        if grade_answer(given_answer, ground_truth):
+        # Try extracting ground truth from <answer>...</answer> if it exists
+        gt_match = re.search(r"<answer>(.*?)</answer>", ground_truth)
+        ground_truth_clean = gt_match.group(1).strip() if gt_match else ground_truth.strip()
+
+        # Extract predicted answer from <answer>...</answer>
+        pred_match = re.search(r"<answer>(.*?)</answer>", predict_str)
+        predicted_answer = pred_match.group(1).strip() if pred_match else predict_str.strip()
+
+        if grade_answer(predicted_answer, ground_truth_clean):
             return 1.0
 
     except Exception:

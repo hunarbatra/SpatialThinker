@@ -112,8 +112,6 @@ class RLHFDataset(Dataset, ImageProcessMixin):
             data_split = "train"
 
         def get_data_files(data_path, data_split):
-            print(f"[DEBUG] Entered get_data_files with data_path={data_path}, data_split={data_split}")
-            
             # Ensure path exists
             if not os.path.exists(data_path):
                 raise ValueError(f"[ERROR] Path does not exist: {data_path}")
@@ -122,7 +120,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
 
             # Glob for split-specific files
             pattern = os.path.join(base_dir, f"{data_split}-*.parquet")
-            print(f"[DEBUG] Looking for files with pattern: {pattern}")
+            
             files = glob.glob(pattern)
             files.sort()
 
@@ -139,7 +137,6 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 if val_files:
                     data_files["val"] = val_files
 
-            print(f"[DEBUG] Resolved data_files: {data_files}")
             return data_files
         
         if os.path.isdir(data_path):
@@ -164,10 +161,16 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         row_dict: dict = self.dataset[index]
         prompt_str: str = row_dict[self.prompt_key]
         if self.format_prompt:
-            prompt_str = prompt_str + " " + self.format_prompt.strip()
+            # prompt_str = prompt_str + " " + self.format_prompt.strip()
+            # first format then question (prompt_str)
+            prompt_str = self.format_prompt.strip() + " " + prompt_str
 
-        if self.image_key in row_dict:
+        if self.image_key in row_dict or "image" in row_dict:
             # https://huggingface.co/docs/transformers/en/tasks/image_text_to_text
+            # Ensure <image> is only at the start
+            prompt_str = prompt_str.replace("<image>", "").strip()
+            prompt_str = "<image> " + prompt_str
+
             content_list = []
             for i, content in enumerate(prompt_str.split("<image>")):
                 if i != 0:

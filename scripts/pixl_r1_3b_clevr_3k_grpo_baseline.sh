@@ -3,6 +3,8 @@ export WANDB_API_KEY=a3642c8b11ba4d06e93d04f615579a18d8a19e07
 
 MODEL_PATH=Qwen/Qwen2.5-VL-3B-Instruct
 
+mkdir -p logs
+
 FORMAT_PROMPT="""A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer must be enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think><answer> answer here </answer>."""
 
 DATA_FILE="hunarbatra/clevr-cogent-baseline-3k"

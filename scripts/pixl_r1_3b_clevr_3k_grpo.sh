@@ -3,6 +3,8 @@ export WANDB_API_KEY=a3642c8b11ba4d06e93d04f615579a18d8a19e07
 
 MODEL_PATH=Qwen/Qwen2.5-VL-3B-Instruct
 
+mkdir -p logs
+
 # FORMAT_PROMPT="""## Task Description
 # You are a highly intelligent vision-language assistant. You are shown an image depicting a 3D scene with multiple objects. Your task is to:
 # 1. Visually identify the objects present in the scene.

@@ -103,8 +103,6 @@ def spatial_compute_score(predict_str: str, ground_truth_str: str) -> Dict[str, 
     pred_scene = extract_scene(predict_str)
     gt_scene = extract_scene(ground_truth_str)
     
-    print(f"[SPATIAL DEBUG] pred_scene: {pred_scene};gt_scene: {gt_scene}")
-    
     fr = format_reward(predict_str)
     cr = count_reward(pred_scene, gt_scene)
     ar = acc_reward(pred_answer, gt_answer)

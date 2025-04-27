@@ -1,7 +1,12 @@
+torch==2.5.0
+torchvision
+torchaudio
+packaging
+wheel
+flash-attn --no-build-isolation
 accelerate
 codetiming
 datasets
-flash-attn>=2.4.3
 liger-kernel
 mathruler
 numpy

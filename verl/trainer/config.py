@@ -38,6 +38,8 @@ class DataConfig:
     prompt_key: str = "prompt"
     answer_key: str = "answer"
     image_key: str = "images"
+    mixed_data: bool = False
+    text_only: bool = False
     max_prompt_length: int = 512
     max_response_length: int = 512
     rollout_batch_size: int = 512

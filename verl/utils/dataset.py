@@ -49,7 +49,6 @@ def collate_fn(features: List[Dict[str, Any]]) -> Dict[str, Any]:
 
     return {**tensors, **non_tensors}
 
-
 class ImageProcessMixin:
     max_pixels: int
     min_pixels: int
@@ -89,22 +88,30 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         prompt_key: str = "prompt",
         answer_key: str = "answer",
         image_key: str = "images",
-        max_prompt_length: int = 1024,
+        mixed_data: bool = False,
+        text_only: bool = False,
+        max_prompt_length: int = 2048,
         truncation: str = "error",
         format_prompt: str = None,
         max_pixels: int = None,
         min_pixels: int = None,
+        shuffle: bool = True,
+        seed: int = 42,
     ):
         self.tokenizer = tokenizer
         self.processor = processor
         self.prompt_key = prompt_key
         self.answer_key = answer_key
         self.image_key = image_key
+        self.mixed_data = mixed_data
+        self.text_only = text_only
         self.max_prompt_length = max_prompt_length
         self.truncation = truncation
         self.format_prompt = format_prompt
         self.max_pixels = max_pixels
         self.min_pixels = min_pixels
+        self.shuffle = shuffle
+        self.seed = seed
 
         if "@" in data_path:
             data_path, data_split = data_path.split("@")
@@ -153,6 +160,25 @@ class RLHFDataset(Dataset, ImageProcessMixin):
             )
         else:  # remote dataset
             self.dataset = load_dataset(data_path, split=data_split)
+            
+        # remove image_key value for every odd row in dataset
+        if self.mixed_data:
+            def remove_image_column(example, idx):
+                if idx % 2 == 0 and self.image_key in example and "<image>" in example[self.prompt_key]:
+                    example[self.prompt_key] = example[self.prompt_key].replace("<image>", "").strip()
+                return example
+
+            self.dataset = self.dataset.map(
+                remove_image_column,
+                with_indices=True,
+                desc="Removing <image> from prompt_key"
+            )
+
+        # Shuffle the dataset if requested
+        if self.shuffle:
+            import random
+            random.seed(self.seed)
+            self.dataset = self.dataset.shuffle(seed=self.seed)
 
     def __len__(self):
         return len(self.dataset)
@@ -162,11 +188,19 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         prompt_str: str = row_dict[self.prompt_key]
         if self.format_prompt:
             # prompt_str = prompt_str + " " + self.format_prompt.strip()
-            # first format then question (prompt_str)
             prompt_str = self.format_prompt.strip() + " " + prompt_str
-
-        if self.image_key in row_dict or "image" in row_dict:
+            
+        if self.text_only:
+            prompt_str = prompt_str.replace("<image>", "").strip()
+            
+        # print(f'TEXT ONLY: {self.text_only}')
+        # prompt_str = prompt_str.replace("<image>", "").strip()
+        # print(f'REMOVED <image> from prompt_str: {prompt_str[:20]}')
+        
+        # if self.image_key in row_dict:
+        if ("<image>" in prompt_str) and (self.image_key in row_dict or "image" in row_dict or "images" in row_dict) and row_dict[self.image_key] is not None:
             # https://huggingface.co/docs/transformers/en/tasks/image_text_to_text
+            # print(f"[DEBUG DATA] Row: {index}")
             # Ensure <image> is only at the start
             prompt_str = prompt_str.replace("<image>", "").strip()
             prompt_str = "<image> " + prompt_str
@@ -185,8 +219,11 @@ class RLHFDataset(Dataset, ImageProcessMixin):
             image_or_images = row_dict.pop(self.image_key)
             if not isinstance(image_or_images, list):
                 image_or_images = [image_or_images]  # wrap single image
+            if any(im is None for im in image_or_images):
+                raise ValueError(f"Image is None at index {index} despite <image> token present. Check data logic.")
             images = [self.process_image(image) for image in image_or_images]
-            model_inputs = self.processor(images, [prompt], add_special_tokens=False, return_tensors="pt")
+            # model_inputs = self.processor(images, [prompt], add_special_tokens=False, return_tensors="pt")
+            model_inputs = self.processor(images, [prompt], return_tensors="pt")
             input_ids = model_inputs.pop("input_ids")[0]
             attention_mask = model_inputs.pop("attention_mask")[0]
             row_dict["multi_modal_data"] = {"image": images}
@@ -199,7 +236,10 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 image_grid_thw=model_inputs["image_grid_thw"],
                 attention_mask=attention_mask,
             )  # (3, seq_length)
+            
         else:
+            # print(f"[DEBUG DATA] Text-only Row: {index}, image_key: {self.image_key}")
+            
             messages = [{"role": "user", "content": prompt_str}]
             prompt = self.tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
             model_inputs = self.tokenizer([prompt], add_special_tokens=False, return_tensors="pt")
@@ -221,4 +261,5 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         row_dict["position_ids"] = position_ids
         row_dict["raw_prompt_ids"] = self.tokenizer.encode(prompt, add_special_tokens=False)
         row_dict["ground_truth"] = row_dict.pop(self.answer_key)
+        
         return row_dict

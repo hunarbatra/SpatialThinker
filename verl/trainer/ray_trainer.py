@@ -272,6 +272,8 @@ class RayPPOTrainer:
             prompt_key=self.config.data.prompt_key,
             answer_key=self.config.data.answer_key,
             image_key=self.config.data.image_key,
+            mixed_data=self.config.data.mixed_data,
+            text_only=self.config.data.text_only,
             max_prompt_length=self.config.data.max_prompt_length,
             truncation="right",
             format_prompt=self.config.data.format_prompt,
@@ -367,11 +369,13 @@ class RayPPOTrainer:
             sample_inputs.extend(input_texts)
 
             if "multi_modal_inputs" in test_batch.non_tensor_batch.keys():
+                print(f"[DEBUG] multi_modal_inputs")
                 test_gen_batch = test_batch.pop(
                     batch_keys=["input_ids", "attention_mask", "position_ids"],
                     non_tensor_batch_keys=["raw_prompt_ids", "multi_modal_data", "multi_modal_inputs"],
                 )
             else:
+                print(f"[DEBUG] text_only_inputs")
                 test_gen_batch = test_batch.pop(
                     batch_keys=["input_ids", "attention_mask", "position_ids"],
                     non_tensor_batch_keys=["raw_prompt_ids"],

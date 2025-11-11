@@ -4,6 +4,8 @@ data:
   prompt_key: problem
   answer_key: answer
   image_key: image
+  mixed_data: false
+  text_only: false
   max_prompt_length: 2048
   max_response_length: 2048
   rollout_batch_size: 512
@@ -48,7 +50,7 @@ worker:
 
   rollout:
     temperature: 1.0
-    n: 5
+    n: 5 # 5 samples per prompt
     gpu_memory_utilization: 0.6
     enforce_eager: false
     enable_chunked_prefill: false
@@ -68,7 +70,7 @@ worker:
 
   reward:
     reward_type: function
-    score_function: math
+    score_function: r1v
     skip_special_tokens: true
 
 trainer:
@@ -78,11 +80,11 @@ trainer:
   experiment_name: qwen25vl3b_cs_clevr_sat_3k
   n_gpus_per_node: 4
   nnodes: 1
-  val_freq: 10  # -1 to disable
+  val_freq: 5  # -1 to disable
   val_before_train: true
   val_only: false
   val_generations_to_log: 3
-  save_freq: 10  # -1 to disable
+  save_freq: 5  # -1 to disable
   save_limit: 1  # -1 to disable
   save_checkpoint_path: null
   load_checkpoint_path: null

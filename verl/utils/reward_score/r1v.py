@@ -26,9 +26,12 @@ def r1v_format_reward(predict_str: str) -> float:
 
 def r1v_accuracy_reward(predict_str: str, ground_truth: str) -> float:
     try:
-        # Try extracting ground truth from <answer>...</answer> if it exists
-        gt_match = re.search(r"<answer>(.*?)</answer>", ground_truth)
-        ground_truth_clean = gt_match.group(1).strip() if gt_match else ground_truth.strip()
+        # Extract ground truth from <answer>...</answer> if present; otherwise, use raw string
+        if "<answer>" in ground_truth and "</answer>" in ground_truth:
+            gt_match = re.search(r"<answer>(.*?)</answer>", ground_truth)
+            ground_truth_clean = gt_match.group(1).strip() if gt_match else ground_truth.strip()
+        else:
+            ground_truth_clean = ground_truth.strip()
 
         # Extract predicted answer from <answer>...</answer>
         pred_match = re.search(r"<answer>(.*?)</answer>", predict_str)
@@ -42,12 +45,15 @@ def r1v_accuracy_reward(predict_str: str, ground_truth: str) -> float:
 
     return 0.0
 
-
 def r1v_compute_score(predict_str: str, ground_truth: str) -> Dict[str, float]:
-    format = r1v_format_reward(predict_str)
-    accuracy = r1v_accuracy_reward(predict_str, ground_truth)
+    format_score = r1v_format_reward(predict_str)
+    accuracy_score = r1v_accuracy_reward(predict_str, ground_truth)
+    total_score = 0.5 * accuracy_score + 0.5 * format_score
+    
+    # print(f"[DEBUG] pred_str: {predict_str} \n\n gt_str: {ground_truth}, format: {format_score}, accuracy: {accuracy_score}, total_score: {total_score}")
+    
     return {
-        "overall": 0.5 * accuracy + 0.5 * format,
-        "format": format,
-        "accuracy": accuracy,
+        "overall": total_score,
+        "format": format_score,
+        "accuracy": accuracy_score,
     }

@@ -20,7 +20,7 @@ import torch
 from transformers import PreTrainedTokenizer
 
 from ...protocol import DataProto
-from ...utils.reward_score import math_compute_score, r1v_compute_score, spatial_compute_score, spatial3322_compute_score
+from ...utils.reward_score import math_compute_score, r1v_compute_score, r1v_scene_compute_score, spatial_sgg_compute_score
 from .config import RewardConfig
 
 
@@ -38,10 +38,10 @@ class CustomRewardManager:
             self.compute_score: Callable[[str, str], RewardScore] = math_compute_score
         elif config.score_function == "r1v":
             self.compute_score: Callable[[str, str], RewardScore] = r1v_compute_score
-        elif config.score_function == "spatial":
-            self.compute_score: Callable[[str, str], RewardScore] = spatial_compute_score
-        elif config.score_function == "spatial3322":
-            self.compute_score: Callable[[str, str], RewardScore] = spatial3322_compute_score
+        elif config.score_function == "r1v_scene":
+            self.compute_score: Callable[[str, str], RewardScore] = r1v_scene_compute_score
+        elif config.score_function == "spatial_sgg":
+            self.compute_score: Callable[[str, str, str], RewardScore] = spatial_sgg_compute_score
         else:
             raise NotImplementedError(f"Unknown score function {config.score_function}.")
 
@@ -59,9 +59,14 @@ class CustomRewardManager:
                 valid_response_ids, skip_special_tokens=self.config.skip_special_tokens
             )
             ground_truth = data_item.non_tensor_batch["ground_truth"]
+            problem = data_item.non_tensor_batch["problem"]
 
-            score = self.compute_score(response_str, ground_truth)
-            reward_tensor[i, valid_response_length - 1] = score["overall"]
+            if self.config.score_function == "spatial_sgg":
+                score = self.compute_score(response_str, ground_truth, problem)
+            else:
+                score = self.compute_score(response_str, ground_truth)
+                
+            reward_tensor[i, valid_response_length - 1] = score["overall"] 
             for key, value in score.items():
                 reward_metrics[key].append(value)
 

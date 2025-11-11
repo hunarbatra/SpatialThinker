@@ -15,7 +15,7 @@
 
 from .math import math_compute_score
 from .r1v import r1v_compute_score
-from .spatial import spatial_compute_score
-from .spatial3322 import spatial3322_compute_score
+from .r1v_scene import r1v_scene_compute_score
+from .spatial_sgg import spatial_sgg_compute_score
 
-__all__ = ["math_compute_score", "r1v_compute_score", "spatial_compute_score", "spatial3322_compute_score"]
+__all__ = ["math_compute_score", "r1v_compute_score", "r1v_scene_compute_score", "spatial_sgg_compute_score"]

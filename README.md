@@ -9,6 +9,9 @@
   <a href="https://huggingface.co/collections/OX-PIXL/spatialthinker">
     <img src="https://img.shields.io/badge/🤗%20Models%20%26%20Dataset-orange.svg" alt="Hugging Face Models">
   </a>
+  <a href="https://github.com/hunarbatra/SpatialThinker/stargazers">
+    <img src="https://img.shields.io/github/stars/hunarbatra/SpatialThinker?style=social" alt="GitHub Stars">
+  </a>
 </p>
 
 ### 💡 Abstract

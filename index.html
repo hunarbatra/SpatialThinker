@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <!-- Meta tags for social media banners, these should be filled in appropriatly as they are your "business card" -->
+  <!-- Replace the content tag with appropriate information -->
+  <meta name="description" content="DESCRIPTION META TAG">
+  <meta property="og:title" content="SOCIAL MEDIA TITLE TAG" />
+  <meta property="og:description" content="SOCIAL MEDIA DESCRIPTION TAG TAG" />
+  <meta property="og:url" content="URL OF THE WEBSITE" />
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X630-->
+  <meta property="og:image" content="static/image/your_banner_image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+
+  <meta name="twitter:title" content="TWITTER BANNER TITLE META TAG">
+  <meta name="twitter:description" content="TWITTER BANNER DESCRIPTION META TAG">
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X600-->
+  <meta name="twitter:image" content="static/images/your_twitter_banner_image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- Keywords for your paper to be indexed by-->
+  <meta name="keywords" content="KEYWORDS SHOULD BE PLACED HERE">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  <title>SpatialThinker</title>
+  <link rel="icon" type="image/x-icon" href="assets/perspective.png">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script src="static/js/bulma-carousel.min.js"></script>
+  <script src="static/js/bulma-slider.min.js"></script>
+  <script src="static/js/index.js"></script>
+  <style>
+    /* Results table highlight colors */
+    table.results-table b {
+      background: #e6ffed; /* light green */
+      padding: 0 4px;
+      border-radius: 3px;
+      font-weight: 700;
+    }
+    table.results-table u {
+      background: #e8f0ff; /* light blue */
+      padding: 0 4px;
+      border-radius: 3px;
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+    /* Contain horizontal overflow for wide tables */
+    .table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 1.2rem;
+      margin: 1.5rem 0;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(236, 239, 255, 0.85), rgba(245, 247, 255, 0.95));
+      box-shadow: 0 25px 50px rgba(31, 45, 93, 0.08);
+    }
+    table.results-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.08);
+    }
+    table.results-table thead th {
+      background: linear-gradient(90deg, rgba(99, 102, 241, 0.12), rgba(59, 130, 246, 0.08));
+      white-space: nowrap;
+      color: #14213d;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(79, 70, 229, 0.15);
+    }
+    table.results-table td, table.results-table th {
+      vertical-align: middle;
+      font-size: 0.95rem;
+      padding: 0.55rem 0.75rem;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+    }
+    /* Keep model names readable; center numeric cells */
+    table.results-table .model { word-break: break-word; text-align: left; }
+    table.results-table.realworld .model { min-width: 190px; }
+    table.results-table.realworld td:not(:first-child),
+    table.results-table.realworld th:not(:first-child) {
+      padding: 0.4rem 0.45rem;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+    table.results-table td:not(:first-child),
+    table.results-table th:not(:first-child) { text-align: center; }
+
+    table.results-table tbody th[colspan] {
+      background: #eef0ff;
+      color: #1f2a44;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.85rem;
+    }
+
+    /* Sticky first column for readability when scrolling horizontally (desktop only) */
+    table.results-table thead th:first-child,
+    table.results-table tbody td:first-child {
+      position: sticky;
+      left: 0;
+      background: #ffffff;
+      z-index: 2;
+    }
+
+    .results-note { margin-top: 0.5rem; }
+
+    @media (max-width: 768px) {
+      .table-container {
+        overflow: visible;
+        margin: 1rem 0;
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+      table.results-table {
+        width: 100%;
+        min-width: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        display: block;
+      }
+      table.results-table thead,
+      table.results-table colgroup { display: none; }
+      table.results-table tbody { display: block; }
+      table.results-table .hide-mobile { display: none !important; }
+      table.results-table tbody tr {
+        display: block;
+        margin: 0 0 1rem 0;
+        border: 1px solid rgba(88, 80, 236, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+        background: #ffffff;
+      }
+      table.results-table tbody th[colspan] {
+        display: block;
+        border: 0;
+        background: #eef0ff;
+        border-bottom: 1px solid rgba(31, 42, 68, 0.08);
+        padding: 0.65rem 0.9rem;
+        text-align: center;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-size: 0.85rem;
+      }
+      table.results-table td,
+      table.results-table th {
+        border: 0;
+        font-size: 0.95rem;
+        padding: 0.55rem 0.95rem;
+      }
+      table.results-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        text-align: right;
+        border-bottom: 1px solid rgba(31, 42, 68, 0.08);
+        flex-wrap: wrap;
+      }
+      table.results-table td:last-child { border-bottom: 0; }
+      table.results-table td::before {
+        font-weight: 600;
+        color: #1f2a44;
+        text-align: left;
+        flex: 1 1 60%;
+        content: var(--label, "");
+        min-width: 140px;
+      }
+      table.results-table .model {
+        text-align: right;
+      }
+      /* Remove sticky behavior on mobile */
+      table.results-table thead th:first-child,
+      table.results-table tbody td:first-child {
+        position: static;
+        left: auto;
+        z-index: auto;
+      }
+
+      /* Map responsive labels */
+      table.results-table.spatial-vqa tbody td:nth-of-type(1) { --label: "Model"; }
+      table.results-table.spatial-vqa tbody td:nth-of-type(2) { --label: "3DSRBench"; }
+      table.results-table.spatial-vqa tbody td:nth-of-type(3) { --label: "CV 2D"; }
+      table.results-table.spatial-vqa tbody td:nth-of-type(4) { --label: "CV 3D"; }
+      table.results-table.spatial-vqa tbody td:nth-of-type(5) { --label: "CV Avg"; }
+      table.results-table.spatial-vqa tbody td:nth-of-type(6) { --label: "BLINK Rel"; }
+      table.results-table.spatial-vqa tbody td:nth-of-type(7) { --label: "BLINK Depth"; }
+      table.results-table.spatial-vqa tbody td:nth-of-type(8) { --label: "BLINK Avg"; }
+
+      table.results-table.agg tbody td:nth-of-type(1) { --label: "Model"; }
+      table.results-table.agg tbody td:nth-of-type(2) { --label: "MMVP"; }
+      table.results-table.agg tbody td:nth-of-type(3) { --label: "SpatialReasonerEval"; }
+      table.results-table.agg tbody td:nth-of-type(4) { --label: "SpatialBench"; }
+
+      table.results-table.realworld tbody td:nth-of-type(1) { --label: "Model"; }
+      table.results-table.realworld tbody td:nth-of-type(2) { --label: "MM-Star"; }
+      table.results-table.realworld tbody td:nth-of-type(3) { --label: "VStar"; }
+      table.results-table.realworld tbody td:nth-of-type(4) { --label: "RealWorldQA"; }
+      table.results-table.realworld tbody td:nth-of-type(5) { --label: "MME-RW-Lite"; }
+      table.results-table.realworld tbody td:nth-of-type(6) { --label: "RoboSpatial-Home"; }
+      table.results-table.realworld tbody td:nth-of-type(7) { --label: "HallusionBench"; }
+
+      table.results-table.avg-accuracy tbody td:nth-of-type(1) { --label: "Model"; }
+      table.results-table.avg-accuracy tbody td:nth-of-type(2) { --label: "Avg. Acc. (12)"; }
+      table.results-table.avg-accuracy tbody td:nth-of-type(3) { --label: "Δ Base"; }
+      table.results-table.avg-accuracy tbody td:nth-of-type(4) { --label: "Δ GPT‑4o"; }
+      table.results-table.avg-accuracy tbody td:nth-of-type(5) { --label: "Δ Claude 3.5"; }
+
+      table.results-table.ood-delta tbody td:nth-of-type(1) { --label: "Model Variant"; }
+      table.results-table.ood-delta tbody td:nth-of-type(2) { --label: "Spatial VQA Δ Base"; }
+      table.results-table.ood-delta tbody td:nth-of-type(3) { --label: "Real-World VQA Δ Base"; }
+    }
+  </style>
+</head>
+
+<body>
+
+
+  <section class="hero hero-scene-graph">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <img src="assets/perspective.png" alt="SpatialThinker icon" class="hero-logo" loading="lazy" />
+            <h1 class="title is-1 publication-title">
+              SpatialThinker: Reinforcing 3D Reasoning in Multimodal LLMs via Spatial Rewards</h1>
+            <div class="is-size-5 publication-authors">
+              <!-- Paper authors -->
+              <span class="author-block">
+                <a href="https://hunarbatra.com" target="_blank">Hunar Batra</a><sup>1*</sup>,</span>
+                <a href="https://www.haqtu.me/" target="_blank">Haoqin Tu</a><sup>2</sup>,</span>
+                <a href="https://g-h-chen.github.io/" target="_blank">Hardy Chen</a><sup>2</sup>,</span>
+                <a href="https://yuanze-lin.me/" target="_blank">Yuanze Lin</a><sup>1</sup>,</span>
+                <a href="https://cihangxie.github.io/" target="_blank">Cihang Xie</a><sup>2</sup>,</span>
+                <a href="https://ronnie-clark.co.uk/" target="_blank">Ronald Clark</a><sup>1</sup></span>
+              <!-- <span class="author-block">
+                <a target="_blank">Zhiguang Chen</a><sup>2</sup>,</span>
+              <span class="author-block">
+                <a href="https://github.com/zzzyzh" target="_blank">Zhonghao Yan</a><sup>3</sup>,</span>
+              <span class="author-block">
+                <a href="https://github.com/yuweijiang" target="_blank">Weijiang Yu</a><sup>2*</sup>,</span>
+              <span class="author-block">
+                <a target="_blank">Fudan Zheng</a><sup>2*</sup></span> -->
+            </div>
+
+            
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <span style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                  <img src="assets/oxford-new.png" alt="University of Oxford ogo" style="height: 40px; width: auto;" loading="lazy" />
+                  <span><sup>1</sup>Perceptual Intelligence and Extended Reality Lab (PIXL), University of Oxford</span>
+                </span>
+                <br>
+                <span style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                  <img src="assets/ucsc.png" alt="University of California, Santa Cruz logo" style="height: 40px; width: auto;" loading="lazy" />
+                  <span><sup>2</sup>VLAA Lab, University of Santa Cruz</span>
+                </span>
+                <!-- {<sup>1</sup>School of Biomedical Engineering, 
+                <sup>2</sup>School of Computer Science and Engineering}, Sun Yat-sen University<br>
+                <sup>3</sup>International School, Beijing University of Posts and Telecommunications -->
+              </span>
+              <span class="eql-cntrb"><small><br><sup>*</sup>Corresponding Author</small></span><br><br>
+              <span class="author-block" style="color: #1f2a44; -webkit-text-fill-color: #1f2a44; line-height: 1.5; font-weight: 600;"><b>NeurIPS 2025 Workshops on Space in Vision, Language, and Embodied AI (SpaVLE), Embodied World Models for Decision Making (EWM), Aligning Reinforcement Learning Experimentalists and Theorists (ARLET), and Scaling Environments for Agents (SEA)</b></span><br><br>
+            </div>
+
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+            <!-- ArXiv abstract Link -->
+            <span class="link-block">
+              <a href="https://arxiv.org/abs/2511.07403" target="_blank"
+                class="external-link button is-normal is-rounded is-dark">
+                <span class="icon">
+                  <i class="ai ai-arxiv"></i>
+                </span>
+                <span>arXiv</span>
+              </a>
+            </span>
+
+              <!-- Arxiv PDF link -->
+              <span class="link-block">
+                <a href="https://arxiv.org/pdf/2511.07403" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Arxiv Paper</span>
+                </a>
+              </span>
+
+                <!-- Github link -->
+                <span class="link-block">
+                  <a href="https://github.com/hunarbatra/SpatialThinker" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+
+                <!-- HuggingFace -->
+                <span class="link-block">
+                  <a href="https://huggingface.co/collections/OX-PIXL/spatialthinker" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">🤗</span>
+                    <span>Models and Dataset</span>
+                  </a>
+                </span>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADD TLDR BUBBLE: We introduce SpatialThinker, a 3D-aware reasoning MLLM trained with dense spatial rewards via RL on 7K synthetic VQA samples (STVQA-7K, released with this work). SpatialThinker achieves 2x the gains of vanilla RL and surpasses GPT-4o on several tasks-->
+
+
+<section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-2" style="background: linear-gradient(to right,  indigo, indigo, skyblue, indigo, indigo); -webkit-background-clip: text; -webkit-text-fill-color: transparent;line-height: 1.5;">
+            Overview</h2>
+        </div>
+      </div>
+      <p style="text-align: justify; text-justify: inter-word;">
+        We introduce SpatialThinker, a 3D-aware reasoning MLLM trained with dense spatial rewards via RL on 7K synthetic VQA dataset we generate, STVQA-7K. SpatialThinker achieves 2x the gains of vanilla RL and surpasses GPT-4o on several tasks.
+        <ul>
+          <li>🌟 <b>SpatialThinker integrates scene graph-based grounding with online RL for spatial reasoning</b>, achieving strong performance with <b>only 7K training samples</b> versus millions required by existing methods.</li>
+          <li>🌟 We introduce STVQA-7K, a <b>high-quality spatial VQA dataset grounded in scene graphs</b>, along with a scalable data generation pipeline up to 108k samples.</li>
+          <li>🌟 We design a <b>dense, lexicographically gated multi-objective reward</b> that guides regionally focused spatial reasoning, <b>achieving superior in- and out-of-distribution generalization</b> across spatial, generic VQA, and real-world benchmarks, and <b>outperforming</b> conventional RL and SFT baselines, open-sourced generalist and spatial MLLMs, and proprietary models.</li>
+        </ul>
+      </p>
+      <br><br>
+      <div class="hero-body">
+        <center>
+          <div class="media-pair">
+            <img src="assets/spatialthinker-stop.gif" alt="SpatialThinker" class="media-graphic media-gif" />
+            <img src="assets/results_overview.png" alt="Results Overview" class="media-graphic media-static" />
+          </div>
+          <h4 class="subtitle has-text-centered" style="font-size: 1.1rem;">SpatialThinker in action. The model first identifies and localizes the region of interest, then constructs a 3D relational scene graph, and finally performs scene-grounded reasoning. This enables SpatialThinker to think in 3D space, beyond 2D projections of images—mirroring how humans build and reason over a mental 3D model of what they see.</h4>
+        </center>
+      </div>
+    </div>
+  </section>
+
+  <!-- Teaser-->
+  <section class="hero teaser is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <br>
+          <h2 class="title is-2" style="background: linear-gradient(to right,  indigo, indigo, skyblue, indigo, indigo); -webkit-background-clip: text; -webkit-text-fill-color: transparent;line-height: 1.5;">
+            Abstract</h2>
+        </div>
+      </div>
+      <p style="text-align: justify; text-justify: inter-word;">
+        Multimodal large language models (MLLMs) have achieved remarkable progress
+in vision-language tasks, but they continue to struggle with spatial understanding.
+Existing spatial MLLMs often rely on explicit 3D inputs or architecture-specific
+modifications, and remain constrained by large-scale datasets or sparse supervision.
+To address these limitations, we introduce SPATIALTHINKER, a 3D-aware MLLM
+trained with RL to integrate structured spatial grounding with multi-step reasoning.
+The model simulates human-like spatial perception by constructing a scene graph
+of task-relevant objects and spatial relations, and reasoning towards an answer via
+dense spatial rewards. SPATIALTHINKER consists of two key contributions: (1)
+a data synthesis pipeline that generates STVQA-7K, a high-quality spatial VQA
+dataset, and (2) online RL with a multi-objective dense spatial reward enforcing
+spatial grounding. SPATIALTHINKER-7B outperforms supervised fine-tuning and
+the sparse RL baseline on spatial understanding and real-world VQA benchmarks,
+nearly doubling the base-model gain compared to sparse RL, and surpassing GPT4o. These results showcase the effectiveness of combining spatial supervision with
+reward-aligned reasoning in enabling robust 3D spatial understanding with limited
+data and advancing MLLMs towards human-level visual reasoning.
+      </p>
+      <br><br>
+      <!-- <div class="hero-body">
+        <center>
+          <img src="assets/spatialthinker.jpg" alt="MY ALT TEXT" class="figure-img" />
+          <h4 class="subtitle has-text-centered" style="font-size: 1.1rem;">Overview of SpatialThinker. Our framework integrates structured scene-graph grounded reasoning with multi-objective dense RL to enhance 3D spatial understanding in multimodal large language models.</h4>
+        </center>
+      </div> -->
+    </div>
+  </section>
+  <!-- End teaser -->
+
+  <!-- <section class="section hero">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-2" style="background: linear-gradient(to right,  indigo, indigo, skyblue, indigo, indigo); -webkit-background-clip: text; -webkit-text-fill-color: transparent;line-height: 1.5;">
+            Highlights</h2>
+        </div>
+      </div>
+      <ul>
+        <li>🌟 We propose <b>SpatialThinker, the first MLLM integrating scene graph-based grounding with online RL for spatial reasoning</b>, achieving strong performance with <b>only 7K training samples</b> versus millions required by existing methods.</li>
+        <li>🌟 We introduce STVQA-7K, a <b>high-quality spatial VQA dataset grounded in scene graphs</b>, along with a scalable data generation pipeline up to 108k samples.</li>
+        <li>🌟 We design a <b>dense, lexicographically gated multi-objective reward</b> that guides regionally focused spatial reasoning, <b>achieving superior in- and out-of-distribution generalization</b> across spatial, generic VQA, and real-world benchmarks, and <b>outperforming</b> conventional RL and SFT baselines, open-sourced generalist and spatial MLLMs, and proprietary models.</li>
+      </ul>
+      <center>
+        <img src="assets/spatialthinker.gif" alt="MY ALT TEXT" class="figure-img" />
+        <h4 class="subtitle has-text-centered" style="font-size: 1.1rem;">SpatialThinker in action. The model first identifies and localizes the region of interest, then constructs a 3D relational scene graph, and finally performs scene-grounded reasoning. This enables SpatialThinker to think in 3D space, beyond 2D projections of images—mirroring how humans build and reason over a mental 3D model of what they see.</h4>
+      </center>
+    </div>
+  </section> -->
+
+  <section class="section hero">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-2" style="background: linear-gradient(to right,  indigo, indigo, skyblue, indigo, indigo); -webkit-background-clip: text; -webkit-text-fill-color: transparent;line-height: 1.5;">
+            Motivation</h2>
+        <h5 class="title is-5" style="text-align: center;">
+          MLLMs still struggle with 3D spatial understanding — they see images but don't understand the spatial structure behind them. We aim to teach models to see in 3D, reason over object relations, and move beyond flat 2D perception — akin to how humans form mental 3D models of a scene.
+        </h5>
+
+        <div class="columns">
+        <!-- reenact. -->
+        <div class="column">
+          <h4 class="title is-5">🔒 Challenges</h4>
+            <div class="content" style="justify-content: flex-start; text-align: left;">
+            <p>
+            <b>(1) Lack of 3D Spatial Knowledge:</b> Existing MLLMs lack supervision connecting 2D pixels to 3D relational structure.<br>
+            <b>(2) Data Inefficiency & Limited Coverage:</b> Prior Spatial VLMs rely on massive training sets yet still generalize poorly, and capture a narrow subset of spatial relations. Our generated STVQA-7K dataset covers 84 distinct 2D and 3D relations, spanning relation, distance, depth, orientation, size, reach, and instance-location reasoning.<br>
+            <b>(3) Sparse RL Signals:</b> Naive reinforcement learning provides weak scalar rewards, failing to shape structured spatial reasoning.<br>
+            <b>(4) Disjoint Scene Graph Usage:</b> Scene graphs are often treated as external pre-processing tools rather than being integrated into the model's reasoning loop.
+            </p>
+          </div>
+        </div>
+        <!--/ reenact -->
+        <!-- swap. -->
+        <div class="column">
+          <h4 class="title is-5">🔑 Solutions</h4>
+          <div class="columns" style="justify-content: flex-start; text-align: left;">
+            <div class="column content">
+              <p>
+              <!-- <br> -->
+            <b>(1) End-to-End Scene-Grounded Reasoning:</b> SpatialThinker integrates scene graph grounding directly into multimodal reasoning, forming 3D relational mental graphs within its thought process.<br>
+            <b>(2) Data-Efficient Synthetic Supervision:</b> Our STVQA-7K dataset (scalable to 108K) provides dense, scene-graph-grounded spatial supervision across 84 diverse 2D + 3D relations.<br>
+            <b>(3) Dense Multi-Objective RL Reward:</b> A lexicographically gated dense reward progressively guides reasoning from format validity → count fidelity → accuracy → spatial grounding.<br>
+            <b>(4) Compact Yet High-Performance Training:</b> Trained on only 7K samples, SpatialThinker doubles RL gains and outperforms GPT-4o on spatial reasoning benchmarks.
+              </p>
+            </div>
+          </div>
+        </div>
+        <!--/ swap. -->
+      </div>
+
+            <!-- <div class="hero-body">
+              <img src="static/images/LatentRep.jpg" alt="MY ALT TEXT" class="figure-img" />
+              <h4 class="subtitle has-text-centered"><b>Caption of the figure.</b></h4>
+              Detailed descriptions.
+            </div> -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="results" class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-2" style="background: linear-gradient(to right,  indigo, indigo, skyblue, indigo, indigo); -webkit-background-clip: text; -webkit-text-fill-color: transparent;line-height: 1.5;">
+            Method</h2>
+            <h5 class="title is-5" style="text-align: center;">
+              Dense, lexicographically gated rewards teach SpatialThinker to ground every reasoning step before answering.
+            </h5>
+            <div class="content method-summary" style="display:none;">
+              <ul>
+                <li><b>Reward design (lexicographic).</b> Format → {count, accuracy} → spatial. Spatial credit is given only if the final answer is correct. We use weights <code>w<sub>format</sub>=0.1</code>, <code>w<sub>count</sub>=0.2</code>, <code>w<sub>accuracy</sub>=0.5</code>, <code>w<sub>spatial</sub>=0.2</code>.</li>
+                <li><b>Format reward.</b> Enforces the <code>&lt;observe&gt;–&lt;scene&gt;–&lt;think&gt;–&lt;answer&gt;</code> template and validates JSON in <code>&lt;scene&gt;</code> (parseable; each object has ID+bbox; relations are valid subject–predicate–object triplets).</li>
+                <li><b>Count reward.</b> Encourages the right number of objects/relations w.r.t. ground truth and penalizes over/under-generation to avoid reward hacking (<code>\lambda<sub>obj</sub>=0.7</code>, <code>\lambda<sub>rel</sub>=0.3</code>).</li>
+                <li><b>Spatial reward.</b> On correct answers only: match predicted ↔ ground-truth objects via Hungarian algorithm with cost <code>\lambda<sub>spatial</sub>(1−IoU)+\lambda<sub>semantic</sub>(1−sim)</code> (<code>\lambda<sub>spatial</sub>=1.0</code>, <code>\lambda<sub>semantic</sub>=2.0</code>), then average CIoU over matches.</li>
+                <li><b>GRPO training.</b> Sample N rollouts per input, score with the dense reward, compute group-normalized advantages <code>A=(r−\mu)/(\sigma+\varepsilon)</code>, and optimize with a PPO-style clipped loss (clips <code>\epsilon_l=0.2</code>, <code>\epsilon_h=0.3</code>) and token-level KL regularization (<code>\beta=1e−2</code>).</li>
+              </ul>
+            </div>
+            <div class="content method-summary">
+              <ul>
+                <li><b>Reward design (lexicographic).</b> Format → {count, accuracy} → spatial. Spatial credit is given only if the final answer is correct. We use weights <code>w<sub>format</sub>=0.1</code>, <code>w<sub>count</sub>=0.2</code>, <code>w<sub>accuracy</sub>=0.5</code>, <code>w<sub>spatial</sub>=0.2</code>.</li>
+                <li><b>Format reward.</b> Enforces the <code>&lt;observe&gt;–&lt;scene&gt;–&lt;think&gt;–&lt;answer&gt;</code> template and validates JSON in <code>&lt;scene&gt;</code> (parseable; each object has ID+bbox; relations are valid subject–predicate–object triplets).</li>
+                <li><b>Count reward.</b> Encourages the right number of objects/relations w.r.t. ground truth and penalizes over/under-generation to avoid reward hacking (<code>&lambda;<sub>obj</sub>=0.7</code>, <code>&lambda;<sub>rel</sub>=0.3</code>).</li>
+                <li><b>Spatial reward.</b> On correct answers only: match predicted ↔ ground-truth objects via Hungarian algorithm with cost <code>&lambda;<sub>spatial</sub>(1−IoU)+&lambda;<sub>semantic</sub>(1−sim)</code> (<code>&lambda;<sub>spatial</sub>=1.0</code>, <code>&lambda;<sub>semantic</sub>=2.0</code>), then average CIoU over matches.</li>
+                <li><b>GRPO training.</b> Sample N rollouts per input, score with the dense reward, compute group-normalized advantages <code>A=(r−&mu;)/(&sigma;+&epsilon;)</code>, and optimize with a PPO-style clipped loss (clips <code>&epsilon;<sub>l</sub>=0.2</code>, <code>&epsilon;<sub>h</sub>=0.3</code>) and token-level KL regularization (<code>&beta;=1e−2</code>).</li>
+              </ul>
+            </div>
+            <div class="hero-body">
+              <div class="figure-frame mobile-flat">
+                <img src="assets/spatialthinker_method.png" alt="MY ALT TEXT" class="figure-img" />
+              </div>
+              <h4 class="subtitle has-text-centered" style="font-size: 1.1rem;">Method overview. Dense lexicographic rewards (format, count, accuracy, spatial) with GRPO enforce grounded 3D reasoning.</h4>
+            </div>
+            <!-- <div class="hero-body">
+              <img src="static/images/ReverseProcess.jpeg" alt="MY ALT TEXT" class="figure-img" />
+              <h4 class="subtitle has-text-centered">Visualization of the predicted probability maps in
+                reverse process.</h4>
+            </div> -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+            <h5 class="title is-5" style="text-align: center;">STVQA-7K: Dataset Construction</h5>
+            <div class="content data-summary" style="text-align: left;">
+              <ul>
+                <li><b>Source.</b> Built from Visual Genome scene graphs, yielding 7,587 multiple‑choice VQA pairs spanning 2D and 3D spatial understanding.</li>
+                <li><b>Coverage.</b> Nine reasoning types: relations, size, orientation, distance, depth, reach, location, count, existence; VG150 predicates augmented with +34 spatial relations (e.g., near/far, bigger/taller, facing away, inside/beneath).</li>
+                <li><b>Generation and filtering.</b> Questions generated from scene graphs using Claude Sonnet 4, rated for difficulty/quality, and filtered via pass@2 consistency checks with GPT‑4o—downselecting from 56,224 to ~7.5K high‑quality items.</li>
+                <li><b>Localized supervision.</b> Per‑question subgraphs via lemmatized keyword matching; absolute‑pixel bounding boxes retained to support CIoU‑based spatial rewards.</li>
+                <li><b>Scalability.</b> Pipeline scales to ~108K samples (upper bound of Visual Genome) for future post‑training or RL fine‑tuning.</li>
+              </ul>
+            </div>
+            <div class="hero-body">
+              <div class="figure-frame mobile-flat">
+                <img src="assets/data.png" alt="MY ALT TEXT" class="figure-img" />
+              </div>
+              <div class="figure-frame no-padding mobile-flat">
+                <img src="assets/dataset.png" alt="MY ALT TEXT" class="figure-img" />
+              </div>
+              <h4 class="subtitle has-text-centered" style="font-size: 1.1rem;">STVQA-7K pipeline (top) and QA-type distribution with examples (below).</h4>
+            </div>
+            <!-- <div class="hero-body">
+              <img src="static/images/ReverseProcess.jpeg" alt="MY ALT TEXT" class="figure-img" />
+              <h4 class="subtitle has-text-centered">Visualization of the predicted probability maps in
+                reverse process.</h4>
+            </div> -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+    <!-- Video carousel -->
+   <section class="hero is-small">
+   <div class="hero-body">
+     <div class="container">
+      <h5 class="title is-5" style="text-align: center;">
+              Qualitative Examples: Scene‑Grounded Spatial Reasoning
+            </h5>
+       <div id="results-carousel" class="carousel results-carousel">
+         <div class="item item1" style="text-align:center;">
+           <img src="assets/spatialthinker-eg1.png" alt="SpatialThinker example 1" class="carousel-graphic" data-full="assets/spatialthinker-eg1.png" />
+         </div>
+         <div class="item item2" style="text-align:center;">
+           <img src="assets/spatialthinker-eg2.png" alt="SpatialThinker example 2" class="carousel-graphic" data-full="assets/spatialthinker-eg2.png" />
+         </div>
+         <div class="item item1" style="text-align:center;">
+           <img src="assets/spatialthinker-eg3.png" alt="SpatialThinker example 3" class="carousel-graphic" data-full="assets/spatialthinker-eg3.png" />
+         </div>
+         <div class="item item2" style="text-align:center;">
+           <img src="assets/spatialthinker-eg4.png" alt="SpatialThinker example 4" class="carousel-graphic" data-full="assets/spatialthinker-eg4.png" />
+         </div>
+       </div>
+     </div>
+   </div>
+ <!-- <h4 class="subtitle has-text-centered"><b>Showing rolling images here.</b></h4> -->
+</section> 
+  <!-- End video carousel -->
+
+  <div id="carousel-modal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <p class="image">
+        <img id="carousel-modal-image" src="" alt="Expanded carousel example">
+      </p>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+  </div>
+
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-2" style="background: linear-gradient(to right,  indigo, indigo, skyblue, indigo, indigo); -webkit-background-clip: text; -webkit-text-fill-color: transparent;line-height: 1.5;">
+            Results</h2>
+            <h5 class="title is-5" style="text-align: center;">Performance on Spatial VQA</h5>
+            <p class="has-text-centered">SpatialThinker‑7B delivers near‑proprietary accuracy and SOTA among open models on spatial VQA with only ~7.5K training samples.</p>
+
+            <div class="columns is-variable is-6 is-multiline">
+              <div class="column is-12-tablet is-12-desktop">
+                <div class="table-container">
+                  <table class="table is-striped is-hoverable is-fullwidth is-bordered results-table spatial-vqa">
+                    <thead>
+                      <tr class="hide-mobile">
+                        <th rowspan="2">Model</th>
+                        <th rowspan="2">3DSRBench</th>
+                        <th colspan="3" class="has-text-centered">CV</th>
+                        <th colspan="3" class="has-text-centered">BLINK</th>
+                      </tr>
+                      <tr>
+                        <th class="hide-mobile">2D</th>
+                        <th class="hide-mobile">3D</th>
+                        <th>Avg</th>
+                        <th class="hide-mobile">Rel</th>
+                        <th class="hide-mobile">Depth</th>
+                        <th>Avg</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><th colspan="8" class="has-text-centered">Proprietary Models</th></tr>
+                      <tr><td class="model">GPT‑4o</td><td>44.3</td><td class="hide-mobile"><u>75.8</u></td><td class="hide-mobile"><b>83.0</b></td><td><b>79.4</b></td><td class="hide-mobile">82.5</td><td class="hide-mobile"><b>78.2</b></td><td><b>80.4</b></td></tr>
+                      <tr><td class="model">Claude 3.5 Sonnet</td><td>48.2</td><td class="hide-mobile">60.2</td><td class="hide-mobile">71.5</td><td>65.9</td><td class="hide-mobile">58.7</td><td class="hide-mobile">67.7</td><td>63.2</td></tr>
+                      <tr><th colspan="8" class="has-text-centered">Open‑Source General MLLMs</th></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B</td><td>44.0</td><td class="hide-mobile">59.9</td><td class="hide-mobile">60.2</td><td>60.0</td><td class="hide-mobile">66.4</td><td class="hide-mobile">54.0</td><td>60.2</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B</td><td>48.4</td><td class="hide-mobile">69.1</td><td class="hide-mobile">68.0</td><td>68.6</td><td class="hide-mobile"><u>84.0</u></td><td class="hide-mobile">52.4</td><td>68.2</td></tr>
+                      <tr><td class="model">VLAA‑Thinker‑Qwen2.5‑VL‑7B</td><td>52.2</td><td class="hide-mobile">60.8</td><td class="hide-mobile">60.3</td><td>60.6</td><td class="hide-mobile">81.2</td><td class="hide-mobile">71.0</td><td>76.1</td></tr>
+                      <tr><td class="model">LLaVA‑NeXT‑8B</td><td>48.4</td><td class="hide-mobile">62.2</td><td class="hide-mobile">65.3</td><td>63.8</td><td class="hide-mobile">–</td><td class="hide-mobile">–</td><td>–</td></tr>
+                      <tr><td class="model">Cambrian‑1‑8B</td><td>42.2</td><td class="hide-mobile">72.3</td><td class="hide-mobile">72.0</td><td>72.2</td><td class="hide-mobile">69.9</td><td class="hide-mobile">73.4</td><td>71.7</td></tr>
+                      <tr><th colspan="8" class="has-text-centered">Open‑Source Spatial MLLMs</th></tr>
+                      <tr><td class="model">RoboPoint‑13B</td><td>–</td><td class="hide-mobile">–</td><td class="hide-mobile">61.2</td><td>–</td><td class="hide-mobile">60.8</td><td class="hide-mobile">61.3</td><td>61.1</td></tr>
+                      <tr><td class="model">SpatialBot‑3B</td><td>41.1</td><td class="hide-mobile">–</td><td class="hide-mobile">69.1</td><td>–</td><td class="hide-mobile">67.8</td><td class="hide-mobile">67.7</td><td>67.8</td></tr>
+                      <tr><td class="model">SpaceLLaVA‑13B</td><td>42.0</td><td class="hide-mobile">–</td><td class="hide-mobile">68.5</td><td>–</td><td class="hide-mobile">72.7</td><td class="hide-mobile">62.9</td><td>67.8</td></tr>
+                      <tr><td class="model">SATORI‑R1</td><td>48.0</td><td class="hide-mobile">54.6</td><td class="hide-mobile">69.4</td><td>62.0</td><td class="hide-mobile">77.0</td><td class="hide-mobile">58.9</td><td>68.0</td></tr>
+                      <tr><td class="model">Spatial‑RGPT‑7B w/ depth</td><td>48.4</td><td class="hide-mobile">–</td><td class="hide-mobile">60.7</td><td>–</td><td class="hide-mobile">65.7</td><td class="hide-mobile">82.3</td><td>74.0</td></tr>
+                      <tr><td class="model">SpaceThinker</td><td>51.1</td><td class="hide-mobile">65.1</td><td class="hide-mobile">65.9</td><td>65.5</td><td class="hide-mobile">73.4</td><td class="hide-mobile">59.9</td><td>66.7</td></tr>
+                      <tr><td class="model">SpaceOm</td><td>52.2</td><td class="hide-mobile">72.1</td><td class="hide-mobile">69.3</td><td>70.7</td><td class="hide-mobile">81.1</td><td class="hide-mobile">65.3</td><td>73.2</td></tr>
+                      <tr><th colspan="8" class="has-text-centered">Method Comparison (Trained on STVQA‑7K)</th></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B + SFT</td><td>50.8</td><td class="hide-mobile">53.9</td><td class="hide-mobile">68.4</td><td>61.1</td><td class="hide-mobile">65.0</td><td class="hide-mobile">66.9</td><td>66.0</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B + Vanilla GRPO</td><td>50.1</td><td class="hide-mobile">70.6</td><td class="hide-mobile">66.6</td><td>68.6</td><td class="hide-mobile">73.4</td><td class="hide-mobile">55.6</td><td>64.5</td></tr>
+                      <tr><td class="model"><b>SpatialThinker‑3B (Ours)</b></td><td>52.9</td><td class="hide-mobile">71.0</td><td class="hide-mobile">76.3</td><td>73.6</td><td class="hide-mobile">81.8</td><td class="hide-mobile">66.9</td><td>74.4</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B + SFT</td><td>53.6</td><td class="hide-mobile">56.1</td><td class="hide-mobile">71.3</td><td>63.7</td><td class="hide-mobile">75.5</td><td class="hide-mobile">64.5</td><td>70.0</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B + Vanilla GRPO</td><td><u>54.7</u></td><td class="hide-mobile">68.9</td><td class="hide-mobile">76.5</td><td>72.7</td><td class="hide-mobile">80.4</td><td class="hide-mobile"><u>75.0</u></td><td>77.7</td></tr>
+                      <tr><td class="model"><b>SpatialThinker‑7B (Ours)</b></td><td><b>56.4</b></td><td class="hide-mobile"><b>77.7</b></td><td class="hide-mobile"><u>78.7</u></td><td><u>78.2</u></td><td class="hide-mobile"><b>86.0</b></td><td class="hide-mobile">72.6</td><td><u>79.3</u></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="has-text-centered is-size-7 results-note">Bold = Top‑1, Underline = Top‑2.</p>
+              </div>
+
+              <div class="column is-12-tablet is-12-desktop">
+                <div class="table-container">
+                  <table class="table is-striped is-hoverable is-fullwidth is-bordered results-table agg">
+                    <thead>
+                      <tr>
+                        <th>Model</th>
+                        <th>MMVP</th>
+                        <th>SpatialReasonerEval</th>
+                        <th>SpatialBench</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><th colspan="4" class="has-text-centered">Proprietary Models</th></tr>
+                      <tr><td class="model">GPT‑4o</td><td>70.7</td><td><b>85.8</b></td><td><b>67.0</b></td></tr>
+                      <tr><td class="model">Claude 3.5 Sonnet</td><td>71.3</td><td><u>84.1</u></td><td>63.2</td></tr>
+                      <tr><th colspan="4" class="has-text-centered">Open‑Source General & Spatial MLLMs</th></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B</td><td>67.0</td><td>68.0</td><td>49.9</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B</td><td>72.3</td><td>70.6</td><td>62.5</td></tr>
+                      <tr><td class="model">VLAA‑Thinker‑7B</td><td><u>75.3</u></td><td>61.2</td><td>66.2</td></tr>
+                      <tr><td class="model">SpaceThinker</td><td>63.0</td><td>69.6</td><td>57.9</td></tr>
+                      <tr><td class="model">SpaceOm</td><td>66.3</td><td>68.9</td><td>58.6</td></tr>
+                      <tr><td class="model">SpatialReasoner</td><td>64.0</td><td>76.4</td><td>59.2</td></tr>
+                      <tr><td class="model">SATORI‑R1</td><td>67.7</td><td>70.5</td><td>60.3</td></tr>
+                      <tr><td class="model">Visionary‑R1</td><td>70.3</td><td>72.9</td><td>59.8</td></tr>
+                      <tr><th colspan="4" class="has-text-centered">Method Comparison (Trained on STVQA‑7K)</th></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B + SFT</td><td>62.7</td><td>67.5</td><td>56.3</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B + Vanilla GRPO</td><td>68.3</td><td>69.3</td><td>56.9</td></tr>
+                      <tr><td class="model"><b>SpatialThinker‑3B (Ours)</b></td><td>69.0</td><td>76.5</td><td>61.5</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B + SFT</td><td>68.3</td><td>70.8</td><td>63.5</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B + Vanilla GRPO</td><td>74.3</td><td>79.6</td><td>64.2</td></tr>
+                      <tr><td class="model"><b>SpatialThinker‑7B (Ours)</b></td><td><b>78.0</b></td><td>82.7</td><td><u>66.4</u></td></tr>
+                  </tbody>
+                </table>
+              </div>
+                <p class="has-text-centered is-size-7 results-note">Bold = Top‑1, Underline = Top‑2.</p>
+              </div>
+            </div>
+
+            <!-- <h5 class="title is-5" style="text-align: center;">Dense RL Training Yields Consistent Average Gains</h5>
+            <p class="has-text-centered">Dense spatial rewards improve average accuracy across 12 benchmarks: SpatialThinker‑7B reaches 71.2%, surpassing SFT by +6.0% and sparse GRPO by +3.2%, while the 3B model delivers +5.5%/+4.1% gains over its ablations.</p>
+
+            <div class="columns is-variable is-6 is-multiline">
+              <div class="column is-12-tablet is-10-desktop is-offset-1-desktop">
+                <div class="table-container">
+                  <table class="table is-striped is-hoverable is-fullwidth is-bordered results-table avg-accuracy">
+                    <thead>
+                      <tr>
+                        <th>Model</th>
+                        <th>Avg. Acc. (12)</th>
+                        <th>Δ<sub>Base</sub></th>
+                        <th>Δ<sub>GPT‑4o</sub></th>
+                        <th>Δ<sub>Claude 3.5 Sonnet</sub></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><th colspan="5" class="has-text-centered">Proprietary and Base MLLMs</th></tr>
+                      <tr><td class="model">GPT‑4o</td><td>67.8</td><td>–</td><td>–</td><td>–</td></tr>
+                      <tr><td class="model">Claude 3.5 Sonnet</td><td>61.1</td><td>–</td><td>–</td><td>–</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B</td><td>57.3</td><td>–</td><td>–</td><td>–</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B</td><td>64.0</td><td>–</td><td>–</td><td>–</td></tr>
+                      <tr><th colspan="5" class="has-text-centered">Method Comparison (Trained on STVQA‑7K)</th></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B + SFT</td><td>60.8</td><td>+3.5</td><td>−7.0</td><td>−0.3</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B + Vanilla GRPO</td><td>62.2</td><td>+4.9</td><td>−5.6</td><td>+1.1</td></tr>
+                      <tr><td class="model"><b>SpatialThinker‑3B (Ours)</b></td><td>66.3</td><td>+9.0</td><td>−1.5</td><td>+5.2</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B + SFT</td><td>65.2</td><td>+1.2</td><td>−2.6</td><td>+4.1</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B + Vanilla GRPO</td><td><u>68.0</u></td><td>+4.0</td><td>+0.2</td><td>+6.9</td></tr>
+                      <tr><td class="model"><b>SpatialThinker‑7B (Ours)</b></td><td><b>71.2</b></td><td><b>+7.2</b></td><td><b>+3.4</b></td><td><b>+10.1</b></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="has-text-centered is-size-7 results-note">Average accuracy across 12 benchmarks; Δ columns measure relative gains.</p>
+              </div>
+            </div> -->
+
+            <!-- <h5 class="title is-5" style="text-align: center;">Out-of-Distribution Generalization via Dense Rewards</h5>
+            <p style="text-align: justify; text-justify: inter-word;">Dense spatial + count rewards keep driving gains once we leave synthetic spatial benchmarks. Sparse GRPO produces solid spatial lifts yet plateaus on real-world tests, roughly matching SFT. In contrast, SpatialThinker-3B/7B deliver +8.5/+5.2 point improvements on six OOD VQA benchmarks—nearly doubling the real-world gains of sparse-reward GRPO at 7B scale.</p>
+
+            <div class="columns is-variable is-6 is-multiline">
+              <div class="column is-12-tablet is-9-desktop is-offset-1-desktop">
+                <div class="table-container">
+                  <table class="table is-striped is-hoverable is-fullwidth is-bordered results-table ood-delta">
+                    <thead>
+                      <tr>
+                        <th>Model Variant</th>
+                        <th>Spatial VQA Δ<sub>Base</sub></th>
+                        <th>Real-World VQA Δ<sub>Base</sub></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="model">Qwen2.5‑VL‑3B + SFT</td><td>+2.3</td><td>+5.9</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B + GRPO</td><td>+4.3</td><td>+6.0</td></tr>
+                      <tr><td class="model"><b>SpatialThinker‑3B</b></td><td><b>+9.3</b></td><td><b>+8.5</b></td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B + SFT</td><td>+0.3</td><td>+2.9</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B + GRPO</td><td>+4.7</td><td>+2.7</td></tr>
+                      <tr><td class="model"><b>SpatialThinker‑7B</b></td><td><b>+8.3</b></td><td><b>+5.2</b></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="has-text-centered is-size-7 results-note">Δ values report average accuracy gains over each base model on six spatial + six real-world benchmarks.</p>
+              </div>
+            </div> -->
+
+            <!-- <div class="hero-body">
+              <img src="static/images/StabilityEvaluationV4.jpeg" alt="MY ALT TEXT" class="figure-img" />
+              <h2 class="subtitle has-text-centered"><b>Caption of the figure.</b></h2>
+            </div> -->
+            <h5 class="title is-5" style="text-align: center;">Performance on Real‑World and General VQA</h5>
+            <p class="has-text-centered">Dense spatial rewards transfer to real‑world VQA; SpatialThinker‑7B leads MM‑Star, VStarBench, and RoboSpatial‑Home, while remaining competitive on hallucination and real‑world tests.</p>
+
+            <div class="columns is-variable is-6 is-multiline">
+              <div class="column is-12-tablet is-12-desktop">
+                <div class="table-container">
+                  <table class="table is-striped is-hoverable is-fullwidth is-bordered results-table realworld">
+                    <thead>
+                      <tr>
+                        <th>Model</th>
+                        <th>MM‑Star</th>
+                        <th>VStar</th>
+                        <th class="hide-mobile">RealWorldQA</th>
+                        <th class="hide-mobile">MME‑RW‑Lite</th>
+                        <th>RoboSpatial‑Home</th>
+                        <th>HallusionBench</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><th colspan="7" class="has-text-centered">Proprietary and Open‑Source MLLMs</th></tr>
+                      <tr><td class="model">GPT‑4o</td><td>64.7</td><td>66.0</td><td class="hide-mobile"><b>75.4</b></td><td class="hide-mobile"><b>51.6</b></td><td>68.4</td><td>55.0</td></tr>
+                      <tr><td class="model">Claude 3.5 Sonnet</td><td><u>65.1</u></td><td>51.8</td><td class="hide-mobile">60.1</td><td class="hide-mobile">45.2</td><td>57.0</td><td>55.5</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B</td><td>55.9</td><td>74.9</td><td class="hide-mobile">58.2</td><td class="hide-mobile">41.9</td><td>58.7</td><td>46.3</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B</td><td>63.9</td><td>75.9</td><td class="hide-mobile">68.4</td><td class="hide-mobile">44.1</td><td>70.6</td><td>52.9</td></tr>
+                      <tr><td class="model">VLAA‑Thinker‑7B</td><td>63.8</td><td>58.1</td><td class="hide-mobile">66.4</td><td class="hide-mobile">44.6</td><td>68.9</td><td><b>68.9</b></td></tr>
+                      <tr><td class="model">SpaceThinker</td><td>54.5</td><td>56.5</td><td class="hide-mobile">61.6</td><td class="hide-mobile">–</td><td>52.6</td><td>65.4</td></tr>
+                      <tr><td class="model">SpaceOm</td><td>57.7</td><td>56.5</td><td class="hide-mobile">53.3</td><td class="hide-mobile">–</td><td>68.9</td><td>62.9</td></tr>
+                      <tr><th colspan="7" class="has-text-centered">Method Comparison (Trained on STVQA‑7K)</th></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B + SFT</td><td>53.9</td><td>73.3</td><td class="hide-mobile">64.8</td><td class="hide-mobile">43.0</td><td>69.8</td><td>58.9</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑3B + Vanilla GRPO</td><td>56.7</td><td>74.3</td><td class="hide-mobile">64.4</td><td class="hide-mobile">46.7</td><td>64.0</td><td>59.0</td></tr>
+                      <tr><td class="model"><b>SpatialThinker‑3B (Ours)</b></td><td>57.6</td><td><u>78.0</u></td><td class="hide-mobile">66.3</td><td class="hide-mobile">46.5</td><td>70.6</td><td>62.5</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B + SFT</td><td>63.2</td><td><u>78.0</u></td><td class="hide-mobile">65.4</td><td class="hide-mobile">47.4</td><td>72.4</td><td>66.2</td></tr>
+                      <tr><td class="model">Qwen2.5‑VL‑7B + Vanilla GRPO</td><td>63.4</td><td>73.9</td><td class="hide-mobile">66.6</td><td class="hide-mobile">46.3</td><td><u>76.2</u></td><td>60.7</td></tr>
+                      <tr><td class="model"><b>SpatialThinker‑7B (Ours)</b></td><td><b>65.9</b></td><td><b>81.7</b></td><td class="hide-mobile"><u>69.2</u></td><td class="hide-mobile"><u>48.3</u></td><td><b>76.3</b></td><td><u>66.4</u></td></tr>
+                  </tbody>
+                </table>
+              </div>
+                <p class="has-text-centered is-size-7 results-note">Bold = Top‑1, Underline = Top‑2.</p>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </section>
+<!-- 
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-2" style="background: linear-gradient(to right,  indigo, indigo, skyblue, indigo, indigo); -webkit-background-clip: text; -webkit-text-fill-color: transparent;line-height: 1.5;">
+            Other Qualitative Analysis</h2>
+            <div class="hero-body">
+              <img src="static/images/Conditioner.png" alt="MY ALT TEXT" class="figure-img" />
+              <h2 class="subtitle has-text-centered"><b>Caption of the figure.</b></h2>
+                  Detailed descriptions.
+            </div>
+        </div>
+      </div>
+    </div>
+  </section> -->
+
+
+  <!-- Video carousel -->
+  <!-- <section class="hero is-small">
+  <div class="hero-body">
+    <div class="container">
+      <h2 class="title is-3">Another Carousel</h2>
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item item-video1">
+          <video poster="" id="video1" autoplay controls muted loop height="100%">
+            <source src="static/videos/carousel1.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-video2">
+          <video poster="" id="video2" autoplay controls muted loop height="100%">
+            <source src="static/videos/carousel2.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-video3">
+          <video poster="" id="video3" autoplay controls muted loop height="100%">\
+            <source src="static/videos/carousel3.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>  -->
+  <!-- End video carousel -->
+
+
+
+
+
+
+  <!-- Paper poster -->
+  <!-- <section class="hero is-small is-light">
+  <div class="hero-body">
+    <div class="container">
+      <h2 class="title">Poster</h2>
+      <iframe  src="static/pdfs/sample.pdf" width="100%" height="550"></iframe>
+      </div>
+    </div>
+  </section> -->
+  <!--End paper poster -->
+
+
+  <!--BibTex citation -->
+  <section class="section hero" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTex</h2>
+      <pre><code>
+        @misc{batra2025spatialthinkerreinforcing3dreasoning,
+          title={SpatialThinker: Reinforcing 3D Reasoning in Multimodal LLMs via Spatial Rewards}, 
+          author={Hunar Batra and Haoqin Tu and Hardy Chen and Yuanze Lin and Cihang Xie and Ronald Clark},
+          year={2025},
+          eprint={2511.07403},
+          archivePrefix={arXiv},
+          primaryClass={cs.CV},
+          url={https://arxiv.org/abs/2511.07403}, 
+        }
+      </code></pre>
+    </div>
+  </section>
+  <!--End BibTex citation -->
+
+
+  <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+
+            <p style="text-align: center;">
+              <!-- This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template"
+                target="_blank">Academic Project Page Template</a> which was adopted from the <a
+                href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+              
+              <br> This website is licensed under a <a rel="license"
+                href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+                Commons Attribution-ShareAlike 4.0 International License</a>.
+               -->
+                Made with ♥ by <a href="https://hunarbatra.com" target="_blank">Hunar Batra</a>, 2025.
+            </p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Statcounter tracking code -->
+
+  <!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
+
+  <!-- End of Statcounter Code -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initCarouselModal();
+    });
+
+    function initCarouselModal() {
+      const modal = document.getElementById('carousel-modal');
+      if (!modal) return;
+      const modalImg = document.getElementById('carousel-modal-image');
+      const closeModal = () => modal.classList.remove('is-active');
+
+      document.querySelectorAll('.carousel-graphic').forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', () => {
+          const fullSrc = img.dataset.full || img.src;
+          modalImg.src = fullSrc;
+          modalImg.alt = img.alt || 'Carousel example';
+          modal.classList.add('is-active');
+        });
+      });
+
+      modal.querySelector('.modal-background').addEventListener('click', closeModal);
+      modal.querySelector('.modal-close').addEventListener('click', closeModal);
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && modal.classList.contains('is-active')) {
+          closeModal();
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>

@@ -92,11 +92,11 @@ python3 scripts/model_merger.py --local_dir path_to_your_last_actor_checkpoint
 
 ### 🧪 Evaluation
 
-To evaluate **SpatialThinker** or baseline models across spatial reasoning benchmarks, use the provided `evaluation/eval.py` script.
+To evaluate **SpatialThinker** or baseline models across spatial reasoning benchmarks, use the provided `evaluation/evals.py` script.
 
 #### Basic Command Structure
 ```bash
-python3 evaluation/eval.py \
+python3 evaluation/evals.py \
     --dataset <dataset_name> \
     --template <prompt_template> \ # e.g. `reasoning`, `no_reasoning`, `spatial_thinker`  
     --model_path <model_or_checkpoint> \
@@ -110,7 +110,7 @@ python3 evaluation/eval.py \
 #### ⚙️ Example: Evaluate Across Multiple Benchmarks
 
 ```bash
-python3 evaluation/eval.py \
+python3 evaluation/evals.py \
     --dataset blink-spatial \
     --template spatial_thinker \
     --model_path OX-PIXL/SpatialThinker-3B \
@@ -118,7 +118,7 @@ python3 evaluation/eval.py \
     --batch_size 4
 ```
 ```bash
-python3 evaluation/eval.py \
+python3 evaluation/evals.py \
     --dataset spatialbench \
     --template spatial_thinker \
     --model_path OX-PIXL/SpatialThinker-3B \
@@ -129,7 +129,7 @@ python3 evaluation/eval.py \
 #### 📊 Example: Evaluate Using an API Provider (OpenAI / Anthropic)
 
 ```bash
-python3 evaluation/eval.py \
+python3 evaluation/evals.py \
     --dataset stvqa \
     --template reasoning \
     --model_path gpt-4o-2024-05-13 \
@@ -137,7 +137,7 @@ python3 evaluation/eval.py \
     --batch_size 1
 ```
 ```bash
-python3 evaluation/eval.py \
+python3 evaluation/evals.py \
     --dataset stvqa \
     --template reasoning \
     --model_path claude-3-5-sonnet \

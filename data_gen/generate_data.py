@@ -430,45 +430,70 @@ def print_data_stats(filename: str = "data/spatialthinker_vqa_56224.csv"):
     print(f'\nCurrent data statistics:\n{data_stats}')
 
 
-# python3 data/generate_data.py generate_hf_data --max_percent=10 --max_categories=['relation']
+# python3 data_gen/generate_data.py generate_hf_data --target_samples=10000 --relation_percent=50
+# 
+# Balancing: 50% relations, 50% distributed equally across 8 other categories
+# Filtering: Within each category, samples are sorted by rating and top N are selected
+# Train/Val: Split proportionally (default 90/10) with both sets balanced
 def generate_hf_data(
     upload_to_hf: bool = True,
     input_file: str = "data/spatialthinker_vqa_56224.csv",
     val_split: float = 0.1,
     target_repo: str = "hunarbatra/spatialthinker_vqa_10k",
-    max_percent: float = None,
-    max_categories: list[str] = None
+    target_samples: int = None,
+    relation_percent: float = 50.0,
 ):
+    """
+    Balance, filter, and upload dataset to HuggingFace.
+    
+    Args:
+        upload_to_hf: Whether to upload to HuggingFace
+        input_file: Path to input CSV file
+        val_split: Fraction for validation set (default 0.1 = 10%)
+        target_repo: HuggingFace repo name
+        target_samples: Total samples to select (e.g., 10000). If None, uses all data.
+        relation_percent: Percentage allocated to 'relation' category (default 50%)
+    
+    Example:
+        # Keep 10k samples: 5k relations + 5k others (625 each)
+        generate_hf_data(target_samples=10000, relation_percent=50)
+    """
     df = pd.read_csv(input_file)
     
     categories = ['relation', 'reach', 'size', 'orientation', 'instance_location', 'depth', 'distance', 'count', 'existence']
+    other_categories = [c for c in categories if c != 'relation']
     
-    # Calculate number of samples per category
     total_rows = len(df)
     print(f"Total rows in dataset: {total_rows}")
     
-    # compute minimum category percent
-    data_stats = compute_data_stats(df)[0]
-    cat_percent = []
-    for cat in categories:
-        cat_percent.append(float(data_stats[cat].replace('%', '')))
-    category_percent = min(cat_percent)
-    print(f'Min Category percent: {category_percent}, total samples: {total_rows}')
+    # If no target specified, use all available data
+    if target_samples is None:
+        target_samples = total_rows
     
-    samples_per_train_category = int(category_percent / 100 * total_rows)
-    samples_per_val_category = max(1, int(val_split * samples_per_train_category))
-    samples_per_train_category -= samples_per_val_category
-
-    if max_percent:
-        max_samples_per_train_category = max(max_percent / 100 * total_rows, samples_per_train_category)
-        max_samples_per_val_category = max(1, int(val_split * max_samples_per_train_category))
-        max_samples_per_train_category -= max_samples_per_val_category
-    else:
-        max_samples_per_train_category = None
-        max_samples_per_val_category = None
-        
-    print(f"Train split: {samples_per_train_category} rows per category")
-    print(f"Val split: {samples_per_val_category} rows per category")
+    target_samples = min(target_samples, total_rows)
+    print(f"Target samples: {target_samples} (relation: {relation_percent}%, others: {100-relation_percent}%)")
+    
+    # Calculate allocations per category
+    relation_total = int(target_samples * relation_percent / 100)
+    other_total = target_samples - relation_total
+    other_per_category = max(1, int(other_total / len(other_categories)))
+    
+    # Calculate train/val splits per category
+    # Ensure minimum 1 sample for train when total > 0
+    allocations = {}
+    
+    relation_val = max(1, int(relation_total * val_split)) if relation_total > 0 else 0
+    relation_train = max(0, relation_total - relation_val)
+    allocations['relation'] = {'train': relation_train, 'val': relation_val}
+    
+    for cat in other_categories:
+        cat_val = max(1, int(other_per_category * val_split)) if other_per_category > 1 else 0
+        cat_train = max(1, other_per_category - cat_val) if other_per_category > 0 else 0
+        allocations[cat] = {'train': cat_train, 'val': cat_val}
+    
+    print(f"\n📊 Target allocations:")
+    print(f"  relation: {allocations['relation']['train']} train + {allocations['relation']['val']} val = {relation_total}")
+    print(f"  others: {allocations[other_categories[0]]['train']} train + {allocations[other_categories[0]]['val']} val = ~{other_per_category} each")
     
     # Initialize empty dataframes to store the sampled data
     sampled_train_df = pd.DataFrame()
@@ -476,49 +501,49 @@ def generate_hf_data(
     
     # Sample data for each category
     for category in categories:
-        # Get all rows for this category
         category_df = df[df['category'] == category]
         
         if len(category_df) == 0:
             print(f"Warning: No data found for category '{category}'")
             continue
         
-        # Sample rows for train and validation sets
-        if (
-            max_percent and 
-            max_samples_per_train_category and 
-            category in max_categories
-        ):
-            train_samples = int(min(max_samples_per_train_category, len(category_df) - (val_split/100*len(category_df))))
-            val_samples = int(min(max_samples_per_val_category, len(category_df) - train_samples))
-            print(f'Using Max Samples for {category}: {train_samples} train, {val_samples} val')
-        else: 
-            train_samples = int(min(samples_per_train_category, len(category_df)))
-            val_samples = int(min(samples_per_val_category, len(category_df) - train_samples))
-            print(f'Using Default Samples for {category}: {train_samples} train, {val_samples} val')
+        train_target = allocations[category]['train']
+        val_target = allocations[category]['val']
         
-        # Sample without replacement
+        # Split into train/val pools first (preserving original behavior)
         if 'rating' in category_df.columns:
-            train_category_df = category_df.sample(n=int((1-val_split)*len(category_df)), random_state=42)
-            val_category_df = category_df.loc[~category_df.index.isin(train_category_df.index)]
+            # Split category data into train/val pools
+            n_train_pool = min(int((1 - val_split) * len(category_df)), len(category_df) - 1)
+            n_train_pool = max(1, n_train_pool)
             
-            train_category_df = train_category_df.sort_values(by='rating', ascending=False)
-            val_category_df = val_category_df.sort_values(by='rating', ascending=False)
-
-            train_df = train_category_df.iloc[:train_samples]
-            val_df = val_category_df.iloc[:val_samples]
+            train_pool = category_df.sample(n=n_train_pool, random_state=42)
+            val_pool = category_df.loc[~category_df.index.isin(train_pool.index)]
+            
+            # Sort each pool by rating (descending) and take top N
+            train_pool = train_pool.sort_values(by='rating', ascending=False)
+            val_pool = val_pool.sort_values(by='rating', ascending=False)
+            
+            train_samples = min(train_target, len(train_pool))
+            val_samples = min(val_target, len(val_pool))
+            
+            train_df = train_pool.iloc[:train_samples]
+            val_df = val_pool.iloc[:val_samples]
         else:
-            category_df = category_df.sample(n=train_samples + val_samples, random_state=42)
-            train_df = category_df.iloc[:train_samples]
-            val_df = category_df.iloc[train_samples:train_samples + val_samples]
+            # No rating column - random sample
+            available = len(category_df)
+            train_samples = min(train_target, int(available * (1 - val_split)))
+            val_samples = min(val_target, available - train_samples)
+            
+            shuffled = category_df.sample(n=train_samples + val_samples, random_state=42)
+            train_df = shuffled.iloc[:train_samples]
+            val_df = shuffled.iloc[train_samples:train_samples + val_samples]
         
-        print(f"Category '{category}': {len(train_df)} train samples, {len(val_df)} val samples")
+        print(f"Category '{category}': {len(train_df)} train, {len(val_df)} val (target: {train_target}/{val_target})")
         
-        # Append to the sampled dataframes
         sampled_train_df = pd.concat([sampled_train_df, train_df], ignore_index=True)
         sampled_val_df = pd.concat([sampled_val_df, val_df], ignore_index=True)
     
-    print(f"Total sampled: {len(sampled_train_df)} train, {len(sampled_val_df)} val")
+    print(f"\n✅ Total sampled: {len(sampled_train_df)} train, {len(sampled_val_df)} val")
     
     # Load the original dataset to get the images
     print("Loading original dataset to get images...")
@@ -632,17 +657,26 @@ def generate_hf_data(
             return updated_answer
         raise ValueError("Answer not found within answer tags")
     
-    sampled_train_df["answer_text"] = sampled_train_df.apply(update_answer_column, axis=1)
-    sampled_val_df["answer_text"] = sampled_val_df.apply(update_answer_column, axis=1)
+    if len(sampled_train_df) > 0:
+        sampled_train_df["answer_text"] = sampled_train_df.apply(update_answer_column, axis=1)
+        sampled_train_df["answer_option_text"] = sampled_train_df.apply(update_answer_column, axis=1, gen_answer_option_text=True)
+        sampled_train_df["answer_text_only"] = sampled_train_df["answer_text"].apply(extract_answer_from_tags)
+        sampled_train_df["answer_option_text_only"] = sampled_train_df["answer_option_text"].apply(extract_answer_from_tags)
     
-    sampled_train_df["answer_option_text"] = sampled_train_df.apply(update_answer_column, axis=1, gen_answer_option_text=True)
-    sampled_val_df["answer_option_text"] = sampled_val_df.apply(update_answer_column, axis=1, gen_answer_option_text=True)
+    if len(sampled_val_df) > 0:
+        sampled_val_df["answer_text"] = sampled_val_df.apply(update_answer_column, axis=1)
+        sampled_val_df["answer_option_text"] = sampled_val_df.apply(update_answer_column, axis=1, gen_answer_option_text=True)
+        sampled_val_df["answer_text_only"] = sampled_val_df["answer_text"].apply(extract_answer_from_tags)
+        sampled_val_df["answer_option_text_only"] = sampled_val_df["answer_option_text"].apply(extract_answer_from_tags)
+    else:
+        # Ensure empty dataframes have required columns
+        for col in ["answer_text", "answer_option_text", "answer_text_only", "answer_option_text_only"]:
+            sampled_val_df[col] = pd.Series(dtype='str')
     
-    sampled_train_df["answer_text_only"] = sampled_train_df["answer_text"].apply(extract_answer_from_tags)
-    sampled_val_df["answer_text_only"] = sampled_val_df["answer_text"].apply(extract_answer_from_tags)
-    
-    sampled_train_df["answer_option_text_only"] = sampled_train_df["answer_option_text"].apply(extract_answer_from_tags)
-    sampled_val_df["answer_option_text_only"] = sampled_val_df["answer_option_text"].apply(extract_answer_from_tags)
+    # Same for train if empty
+    if len(sampled_train_df) == 0:
+        for col in ["answer_text", "answer_option_text", "answer_text_only", "answer_option_text_only"]:
+            sampled_train_df[col] = pd.Series(dtype='str')
         
     def update_problem_column(row):
         # Extract image size from existing problem string
@@ -666,9 +700,21 @@ def generate_hf_data(
         updated_problem = f"{formatted_prefix}\nQ. {question_text}"
         return str(updated_problem)
 
-    # Apply to both dataframes
-    sampled_train_df["problem"] = sampled_train_df.apply(update_problem_column, axis=1)
-    sampled_val_df["problem"] = sampled_val_df.apply(update_problem_column, axis=1)
+    # Apply to both dataframes (only if non-empty)
+    if len(sampled_train_df) > 0:
+        sampled_train_df["problem"] = sampled_train_df.apply(update_problem_column, axis=1)
+    if len(sampled_val_df) > 0:
+        sampled_val_df["problem"] = sampled_val_df.apply(update_problem_column, axis=1)
+    
+    # Ensure answer_only column exists for both
+    if len(sampled_train_df) > 0 and "answer_only" not in sampled_train_df.columns:
+        sampled_train_df["answer_only"] = sampled_train_df["answer"].apply(extract_answer_from_tags)
+    if len(sampled_val_df) > 0 and "answer_only" not in sampled_val_df.columns:
+        sampled_val_df["answer_only"] = sampled_val_df["answer"].apply(extract_answer_from_tags)
+    elif len(sampled_val_df) == 0:
+        sampled_val_df["answer_only"] = pd.Series(dtype='str')
+    if len(sampled_train_df) == 0 and "answer_only" not in sampled_train_df.columns:
+        sampled_train_df["answer_only"] = pd.Series(dtype='str')
 
     # save as csv
     sampled_train_df.to_csv("data_train.csv", index=False)

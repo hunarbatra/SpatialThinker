@@ -168,11 +168,26 @@ Generate your own spatial VQA datasets using our data synthesis pipeline. The pi
 
 **Quick Start:**
 ```bash
-# Generate → Filter → Validate → Upload
+# Step 1: Generate raw QA pairs (56K full, or 12K for cost savings)
 python data_gen/generate_data.py preprocess_data --data_cap=12000
-python data_gen/generate_data.py filter_by_rating --top_k=10000
-python data_gen/generate_data.py validate_with_gpt4o
-python data_gen/generate_data.py generate_hf_data --upload_to_hf=True
+
+# Step 2: Balance + Filter (50% relations, top-rated per category)
+python data_gen/generate_data.py generate_hf_data \
+    --input_file="data/spatialthinker_vqa_train.csv" \
+    --target_samples=10000 \
+    --relation_percent=50 \
+    --upload_to_hf=False
+
+# Step 3: Validate with GPT-4o (~75% pass rate)
+python data_gen/generate_data.py validate_with_gpt4o \
+    --input_file="data_train.csv" \
+    --output_file="data/spatialthinker_vqa_validated.csv"
+
+# Step 4: Upload final dataset to HuggingFace
+python data_gen/generate_data.py generate_hf_data \
+    --input_file="data/spatialthinker_vqa_validated.csv" \
+    --target_repo="your-username/spatialthinker_vqa" \
+    --upload_to_hf=True
 ```
 
 📖 **Full documentation**: [`data_gen/README.md`](data_gen/README.md)

@@ -40,6 +40,7 @@ data and advancing MLLMs towards human-level visual reasoning.
 ---
 
 ### ✨ Updates
+- [2026/01/28] 🔥 Spatial Data Generation Pipeline released.
 - [2025/11/11] 🔥 Code base released.
 - [2025/11/08] 🔥 Model Checkpoints and Dataset released.
 - 
@@ -157,7 +158,24 @@ python3 evaluation/evals.py \
 - [x] Release Evaluation Code  
 - [x] Release Model Checkpoints  
 - [x] Release STVQA-7K Training Dataset  
-- [ ] Release STVQA-7K Data Generation Pipeline
+- [x] Release STVQA-7K Data Generation Pipeline
+
+---
+
+### 🗂️ STVQA Data Generation Pipeline
+
+Generate your own spatial VQA datasets using our data synthesis pipeline. The pipeline uses Claude Sonnet 4 for question generation and GPT-4o for consistency validation.
+
+**Quick Start:**
+```bash
+# Generate → Filter → Validate → Upload
+python data_gen/generate_data.py preprocess_data --data_cap=12000
+python data_gen/generate_data.py filter_by_rating --top_k=10000
+python data_gen/generate_data.py validate_with_gpt4o
+python data_gen/generate_data.py generate_hf_data --upload_to_hf=True
+```
+
+📖 **Full documentation**: [`data_gen/README.md`](data_gen/README.md)
 
 ---
 ### 📘 Citation

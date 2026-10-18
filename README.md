@@ -1,19 +1,5 @@
 # SpatialThinker: Reinforcing 3D Reasoning in Multimodal LLMs via Spatial Rewards  
-<p align="center">
-  <a href="https://arxiv.org/abs/2511.07403">
-    <img src="https://img.shields.io/badge/arXiv-2511.07403-b31b1b.svg" alt="arXiv">
-  </a>
-  <!-- <a href="https://pixl.cs.ox.ac.uk/spatial-thinker"> -->
-  <a href="https://hunarbatra.com/SpatialThinker">
-    <img src="https://img.shields.io/badge/🌐%20Project%20Page-blue.svg" alt="Project Page">
-  </a>
-  <a href="https://huggingface.co/collections/OX-PIXL/spatialthinker">
-    <img src="https://img.shields.io/badge/🤗%20Models%20%26%20Dataset-orange.svg" alt="Hugging Face Models">
-  </a>
-  <a href="https://github.com/hunarbatra/SpatialThinker/stargazers"> 
-    <img src="https://img.shields.io/github/stars/hunarbatra/SpatialThinker?style=social" alt="GitHub Stars">
-  </a>
-</p>
+
 
 ### 💡 Abstract
 Multimodal large language models (MLLMs) have achieved remarkable progress
@@ -37,13 +23,6 @@ data and advancing MLLMs towards human-level visual reasoning.
   <img src="assets/spatialthinker.jpg" width="60%" alt="SpatialThinker Overview">
 </p>
 
----
-
-### ✨ Updates
-- [2026/01/28] 🔥 Spatial Data Generation Pipeline released.
-- [2025/11/11] 🔥 Code base released.
-- [2025/11/08] 🔥 Model Checkpoints and Dataset released.
-- 
 ---
 
 ### 🧩 Requirements
@@ -191,31 +170,3 @@ python data_gen/generate_data.py generate_hf_data \
 ```
 
 📖 **Full documentation**: [`data_gen/README.md`](data_gen/README.md)
-
----
-### 📘 Citation
-
-If you find this repository useful in your project, please consider giving a ⭐ and citing:
-
-```bibtex
-@misc{batra2025spatialthinkerreinforcing3dreasoning,  
- title={SpatialThinker: Reinforcing 3D Reasoning in Multimodal LLMs via Spatial Rewards},  
- author={Hunar Batra and Haoqin Tu and Hardy Chen and Yuanze Lin and Cihang Xie and Ronald Clark},  
- year={2025},  
- eprint={2511.07403},  
- archivePrefix={arXiv},  
- primaryClass={cs.CV},  
- url={https://arxiv.org/abs/2511.07403},  
-}
-```
----
-
-### 🌟 Acknowledgements
-This project builds upon the following open-source frameworks and works:
-- [**EasyR1**](https://github.com/hiyouga/EasyR1) — An efficient, scalable, multi-modality RL training framework based on veRL  
-- [**LLaMA-Factory**](https://github.com/hunarbatra/LLaMA-Factory) — Unified efficient fine-tuning of 100+ LLMs & VLMs  
-- [**Qwen2.5-VL**](https://arxiv.org/abs/2502.13923) — Multimodal LLM series from the Qwen family
-  
----
-
-💡 *For more details, visit the [project page](https://pixl.cs.ox.ac.uk/spatial-thinker) and our [paper on arXiv](https://arxiv.org/abs/2511.07403).*
